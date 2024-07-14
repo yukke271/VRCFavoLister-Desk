@@ -1,0 +1,27 @@
+{
+  "name": "vrc-favo-lister",
+  "private": true,
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "astro": "astro",
+    "dev": "astro dev --host",
+    "build": "astro check && astro build",
+    "preview": "astro preview",
+    "tauri": "tauri",
+    "tauri dev": "cargo tauri dev",
+    "tauri build": "cargo tauri build",
+    "lint": "eslint --ext \".js,.ts,\" --ignore-path .gitignore .",
+    "lintfix": "prettier --write --list-different . && yarn lint --fix"
+  },
+  "devDependencies": {
+    "astro": "^4.11.5",
+    "@astrojs/check": "^0.8.1",
+    "typescript": "^5.5.3",
+    "eslint": "^9.7.0",
+    "@typescript-eslint/eslint-plugin": "^7.16.0",
+    "@typescript-eslint/parser": "^7.16.0",
+    "eslint-config-standard-with-typescript": "^43.0.1",
+    "prettier": "^3.3.3"
+  }
+}

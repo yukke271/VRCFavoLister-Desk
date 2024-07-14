@@ -9,7 +9,7 @@
 
   // The 'service' property is the name of the service for the container that VS Code should
   // use. Update this value and .devcontainer/docker-compose.yml to the real service name.
-  "service": "VRCFavoLister",
+  "service": "vrc_favo_lister",
 
   // The optional 'workspaceFolder' property is the path VS Code should open by default when
   // connected. This is typically a file mount in .devcontainer/docker-compose.yml
@@ -51,7 +51,11 @@
         "editor.formatOnSave": true,
         "rust-analyzer.checkOnSave": true,
         "rust-analyzer.check.command": "clippy",
-        "rust-analyzer.check.extraArgs": ["--", "-A", "clippy::needless_return"],
+        "rust-analyzer.check.extraArgs": [
+          "--",
+          "-A",
+          "clippy::needless_return"
+        ],
         "[html]": {
           "editor.defaultFormatter": "esbenp.prettier-vscode"
         },
