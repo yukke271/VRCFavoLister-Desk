@@ -1,0 +1,46 @@
+{
+  // エディタの自動保存の設定
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 1000,
+
+  // 保存する同時に自動整形する
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+
+  // eslintの設定
+  "eslint.workingDirectories": ["./app/VRCFavoLister"],
+
+  // Prettierの設定
+  "prettier.arrowParens": "always",
+  "prettier.trailingComma": "es5",
+  "prettier.tabWidth": 2,
+  "prettier.semi": false,
+  "prettier.singleQuote": false,
+  "prettier.jsxSingleQuote": false,
+  "prettier.printWidth": 100,
+
+  // clippyの設定
+  "rust-analyzer.checkOnSave": true,
+  "rust-analyzer.check.command": "clippy",
+  "rust-analyzer.check.extraArgs": ["--", "-A", "clippy::needless_return"],
+
+  // 言語ごとの設定
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[rust]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
+}

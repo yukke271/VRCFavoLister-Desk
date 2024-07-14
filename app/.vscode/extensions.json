@@ -1,0 +1,18 @@
+{
+  "recommendations": [
+    // code linter
+    "dbaeumer.vscode-eslint",
+    // code formatter
+    "esbenp.prettier-vscode",
+    // CodeLLDB
+    "vadimcn.vscode-lldb",
+    // toml
+    "tamasfe.even-better-toml",
+    // create
+    "serayuzgur.crates",
+    // Rust
+    "rust-lang.rust-analyzer",
+    // Remote Development
+    "ms-vscode-remote.remote-containers"
+  ]
+}

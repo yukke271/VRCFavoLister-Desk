@@ -1,0 +1,19 @@
+version: "3"
+
+services:
+  vrc_favo_lister:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - 7001:80
+    volumes:
+      - .:/workspace
+      - vrc_favo_lister-target:/workspace/app/target
+    tty: true
+    stdin_open: true
+    command: bash -c "vncserver :1 -geometry 800x600 -depth 24 -passwd /.vncpasswd && websockify -D --web=/usr/share/novnc/ 80 localhost:5901 && tail -f /dev/null"
+
+volumes:
+  vrc_favo_lister-target:
+    external: true
