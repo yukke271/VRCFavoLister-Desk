@@ -1,4 +1,8 @@
 ---
+interface Props {
+	title: string;
+}
+
 const { title } = Astro.props;
 const description = "A simple VRC favorite lister";
 ---
@@ -31,7 +35,7 @@ const description = "A simple VRC favorite lister";
 	}
 	html {
 		font-family: system-ui, sans-serif;
-		background: #13151a;
+		background: #c9ccd3;
 		background-size: 224px;
 	}
 	code {
