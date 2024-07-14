@@ -1,0 +1,45 @@
+---
+import Layout from "~/src/layouts/Layout.astro";
+
+// const saveLists = () => {
+//   console.log("saveLists");
+
+//   // Todo:Rust側で、読み込んだリストをすべてSQLiteに保存する
+// };
+---
+
+<Layout title="Astro example">
+  <!-- 
+  <button @click="parseWorlds">Parse</button>
+  <button @click="saveLists">Download</button>
+  -->
+  <a href="/">Go to Index Page</a>
+</Layout>
+
+<!--
+<script setup lang="ts">
+  import { ref } from 'vue';
+  import type { World } from '../types/world';
+  import { devLog, downloadJSON, worldsParser } from '../utils';
+  
+    const worlds = ref("");
+    const worldsList = ref<World[]>([]);
+    
+    const parseWorlds = () => {
+      devLog(worlds.value);
+      if (worlds.value.trim() === "") {
+        alert("APIから取得した文字列を貼り付けてください");
+        return;
+      }
+      try {
+        worldsParser(worldsList.value, worlds.value);
+      } catch (error) {
+        alert(error);
+      }
+    };
+    
+    const downloadToJSON = () => {
+      downloadJSON(worldsList.value);
+    };
+    </script>
+ -->
