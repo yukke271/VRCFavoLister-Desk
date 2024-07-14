@@ -17,6 +17,7 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "preserve",
+    "jsxImportSource": "solid-js",
     "module": "esnext",
     "moduleResolution": "node",
     "target": "es2020",
