@@ -1,4 +1,4 @@
-import { devLog } from '~/src/utils';
+import { devLog } from "~/src/utils";
 
 /**
  * @/utils/parser/isPlatform.ts
@@ -8,14 +8,19 @@ import { devLog } from '~/src/utils';
  * @returns true or false
  */
 
-export const isPlatform = ( unityPackages: { platform: string; }[] , keyword : string ) => {
+export const isPlatform = (
+  unityPackages: { platform: string }[],
+  keyword: string,
+) => {
   if (unityPackages.length >= 1) {
-    unityPackages.forEach((unityPackages: { platform: string; }) => {
-      if (unityPackages.platform === "standalonewindows" && keyword === "PC") return true;
-      if (unityPackages.platform === "android" && keyword === "Quest") return true;      
+    unityPackages.forEach((unityPackages: { platform: string }) => {
+      if (unityPackages.platform === "standalonewindows" && keyword === "PC")
+        return true;
+      if (unityPackages.platform === "android" && keyword === "Quest")
+        return true;
     });
   } else {
     devLog(unityPackages.length.toString());
   }
   return false;
-}
+};

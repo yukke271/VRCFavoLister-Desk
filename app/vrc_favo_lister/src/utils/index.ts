@@ -11,7 +11,7 @@ export const isMobile = () => {
 };
 
 export const devLog = (text: string) => {
-  const envType = import.meta.env.MODE
+  const envType = import.meta.env.MODE;
   if (envType !== "development") return;
   console.log(text);
 };
