@@ -1,0 +1,27 @@
+---
+  import '~/public/styles/CardStyle.css';
+  import { isPlatform } from '~/src/utils/parser/isPlatform';
+  import { Image } from "astro:assets";
+  const { avatar } = Astro.props;
+---
+
+<a
+  href={"https://vrchat.com/home/avatar/" + avatar.id}
+  target="_blank"
+  class="container"
+>
+  <!-- :aspect-ratio="861 / 725" -->
+  <Image
+    src={avatar.thumbnailImageUrl}
+    alt={avatar.name}
+  />
+  <div class="incard">
+    <p class="title">{ avatar.name }</p>
+  </div>
+  <div class={"pc" + isPlatform(avatar.platform, 'PC') ? '' : 'grayout'}>
+    <span>PC</span>
+  </div>
+  <div class={"quest" + isPlatform(avatar.platform, 'Quest') ? '' : 'grayout'}>
+    <span>Quest</span>
+  </div>
+</a>
