@@ -1,8 +1,8 @@
 ---
-  import '~/public/styles/CardStyle.css';
-  import { isPlatform } from '~/src/utils/parser/isPlatform';
-  import { Image } from "astro:assets";
-  const { avatar } = Astro.props;
+import "~/public/styles/CardStyle.css";
+import { isPlatform } from "~/src/utils/parser/isPlatform";
+import { Image } from "astro:assets";
+const { avatar } = Astro.props;
 ---
 
 <a
@@ -11,17 +11,14 @@
   class="container"
 >
   <!-- :aspect-ratio="861 / 725" -->
-  <Image
-    src={avatar.thumbnailImageUrl}
-    alt={avatar.name}
-  />
+  <Image src={avatar.thumbnailImageUrl} alt={avatar.name} />
   <div class="incard">
-    <p class="title">{ avatar.name }</p>
+    <p class="title">{avatar.name}</p>
   </div>
-  <div class={"pc" + isPlatform(avatar.platform, 'PC') ? '' : 'grayout'}>
+  <div class={"pc" + isPlatform(avatar.platform, "PC") ? "" : "grayout"}>
     <span>PC</span>
   </div>
-  <div class={"quest" + isPlatform(avatar.platform, 'Quest') ? '' : 'grayout'}>
+  <div class={"quest" + isPlatform(avatar.platform, "Quest") ? "" : "grayout"}>
     <span>Quest</span>
   </div>
 </a>
