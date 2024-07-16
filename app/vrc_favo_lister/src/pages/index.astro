@@ -1,13 +1,25 @@
 ---
 import Layout from "~/src/layouts/Layout.astro";
 import Greet from "~/src/components/Solid/Greet";
+// import LoginCheck from "~/src/components/Solid/LoginCheck";
+// import EditConfig from "~/src/components/Solid/EditConfig";
+// import LoginForm from "~/src/components/Solid/LoginForm";
+import TestButton from "~/src/components/Solid/TestButton";
 ---
 
 <Layout title="Welcome to Astro.">
   <main>
-    <h1>Astro</h1>
+    <h1>ぶいちゃふぁぼりす</h1>
+
+    <!-- <LoginCheck client:only="solid-js" />
+
+    <LoginForm client:only="solid-js" />
+
+    <EditConfig client:only="solid-js" /> -->
 
     <Greet client:only="solid-js" />
+
+    <TestButton client:only="solid-js" />
 
     <a href="/world/">Go to World Page</a>
   </main>
