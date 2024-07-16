@@ -18,6 +18,7 @@
   "prettier.singleQuote": false,
   "prettier.jsxSingleQuote": false,
   "prettier.printWidth": 100,
+  
 
   // clippyの設定
   "rust-analyzer.checkOnSave": true,

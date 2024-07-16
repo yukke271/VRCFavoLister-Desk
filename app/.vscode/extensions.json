@@ -10,8 +10,6 @@
     "tamasfe.even-better-toml",
     // create
     "serayuzgur.crates",
-    // Rust
-    "rust-lang.rust-analyzer",
     // Remote Development
     "ms-vscode-remote.remote-containers",
 
