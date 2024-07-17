@@ -5,7 +5,8 @@ export interface Config {
   apiKey: string;
   userAgent: string;
   authCookie: string;
-  basicCredentials: string;
+  twoFactorType: string;
+  twoFactorAuth: string;
   username: string;
   password: string;
 }
