@@ -1,9 +1,20 @@
 use serde::{Serialize, Deserialize};
 use serde_json::Result;
 use std::{env, fs::File, io::{ErrorKind, Read, Write}};
-
 use tauri::{api::path::{BaseDirectory, resolve_path}, Env};
-//use tauri::api::fs::{read_text_file,write_text_file};
+
+/*
+  app/vrc_favo_lister/src-tauri/src/apiconfig.rs
+  APIConfig構造体の定義と実装
+  APIConfigはAPI呼び出しに関する設定情報を保持する構造体
+  
+  APIConfig::new()
+  - Configファイルを読み込み、APIConfigを返す
+
+  APIConfig::save_config_file()
+  - ConfigファイルにAPIConfigを保存する
+
+*/
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -21,7 +32,7 @@ pub struct APIConfig {
 impl APIConfig {
   
   pub fn new() -> Self {
-    APIConfig::load_config_file().expect("REASON")
+    APIConfig::load_config_file().expect("Cannot load config file")
   }
 
   pub fn save_config_file(&self) -> Result<()> {
@@ -45,7 +56,7 @@ impl APIConfig {
     };
 
     println!("Save config file: {:?}", config_path.clone());
-    println!("Save config: {:?}", self);
+    // println!("Save config: {:?}", self);
 
     Ok(())
   }
@@ -78,9 +89,7 @@ impl APIConfig {
     // println!("config_path: {:?}", config_path);
 
     // jsonデータが保存されたConfigファイルを読み込む
-
-    // TODO:ファイルの作成部分は、アプリの初期化処理に移動させる
-    // ファイルが見つかりませんでした
+    // ファイルが見つからない場合はデフォルト値でファイルを作成し、APIConfigを返す
     let f = File::open(config_path.clone());
     let mut f = match f {
       Ok(file) => file,
@@ -97,22 +106,18 @@ impl APIConfig {
       Err(err) => panic!("Cannot open file: {:?}", err),
     };
     
-    // TODO:ファイル読み込み時のエラーハンドリング
+    // 正常にファイルを読み込めた場合ここに到達する
     let mut config_str = String::new();
     match f.read_to_string(&mut config_str) {
         Ok(_) => { println!("Read file: {:?}", config_path.clone()); },
         Err(err) => { panic!("Cannot read file: {:?}", err); }
     }
-    
     // println!("config_str: {}", config_str);
 
     // ファイルの中身をConfig構造体に合わせて展開する
-    // let config: Self = serde_json::from_str(&config_str).unwrap();
-    // let prec = serde_json::from_str(&config_str);
-    // println!("prec: {:?}", prec);
-    // let config: Self = prec.unwrap();
-    
     let config: Self = serde_json::from_str(&config_str).unwrap();
+    // println!("config: {:?}", config);
+
     return Ok(config);
   }
 
