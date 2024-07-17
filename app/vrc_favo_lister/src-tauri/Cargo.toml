@@ -23,7 +23,7 @@ tokio = { version = "1.29.1", features = ["full"] }
 futures = "0.3.30"
 directories = "5.0.1"
 dunce = "1.0.4"
-reqwest = "0.11.18"
+reqwest = { version = "0.11.18", features = ["native-tls-alpn", "cookies", "gzip", "brotli", "deflate"] }
 base64 = "0.22.1"
 
 [features]
