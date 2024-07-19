@@ -1,14 +1,22 @@
 ---
 import Layout from "~/src/layouts/Layout.astro";
-import LoginButton from "~/src/components/Solid/LoginButton";
+
 ---
 
-<Layout title="Welcome to Astro.">
+<Layout>
   <main>
     <h1>ぶいちゃふぁぼりす</h1>
 
-    <LoginButton client:only="solid-js" />
+    <!-- ヘッダーに置きたい -->
+    <!-- DBに保存されたお気に入りのリストを表示する機能 -->
+    <!-- <a href="/">Home</a>
+    <a href="/favorite/">Favorite</a>
+    <a href="/friend/">Friend</a>
+    <a href="/settings/">Settings</a> -->
+    <!-- ログイン機能 -->
+    <!-- <LoginButton client:only="solid-js" /> -->
+   
+    <!-- ホーム画面には使い方をまとめる -->
 
-    <a href="/world/">Go to World Page</a>
   </main>
 </Layout>

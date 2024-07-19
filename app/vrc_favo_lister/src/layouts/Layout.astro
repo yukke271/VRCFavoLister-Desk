@@ -1,9 +1,5 @@
 ---
-interface Props {
-  title: string;
-}
-
-const { title } = Astro.props;
+import NavigationHeader from "~/src/components/Solid/NavigationHeader";
 const description = "A simple VRC favorite lister";
 ---
 
@@ -15,29 +11,53 @@ const description = "A simple VRC favorite lister";
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="stylesheet" href="/css/Main.css" />
-    <title>{title}</title>
   </head>
   <body>
+    <NavigationHeader client:only="solid-js" />
     <slot />
   </body>
 </html>
 <style is:global>
-  :root {
-    --accent: 136, 58, 234;
-    --accent-light: 224, 204, 250;
-    --accent-dark: 49, 10, 101;
-    --accent-gradient: linear-gradient(
-      45deg,
-      rgb(var(--accent)),
-      rgb(var(--accent-light)) 30%,
-      white 60%
-    );
+  :root,
+  #root {
+    @apply w-full max-w-screen-xl;
+    /* 最大幅を画面幅(1280px)に制限 */
+    /* https://tailwindcss.com/docs/max-width */
+
+    --backgroud: rgb(255, 255, 255);
+    --foreground: rgb(0, 0, 0);
+    --accent: rgb(56, 43, 240);
+    --accent-light: rgb(136, 145, 250);
+    --accent-dark: rgb(9, 1, 129);
+
+  }
+  .dark {
+    /* ダークモードを実装するときのためのクラス */
+    /* tailwindの設定項目にクラスによるダークモード設定を指定している */
+    /* https://tailwindcss.com/docs/dark-mode#toggling-dark-mode-manually */
   }
   html {
     font-family: system-ui, sans-serif;
-    background: #c9ccd3;
     background-size: 224px;
+  }
+  body {
+    @apply flex flex-col items-center;
+    /* display: flex */
+    /* flex-direction: column */
+    /* align-items: center */
+  }
+  main {
+    margin: auto;
+    padding: 1rem;
+    max-width: calc(100% - 2rem);
+    font-size: 20px;
+    line-height: 1.6;
+  }
+  h1 {
+    font-size: 1.75rem;
+  }
+  h2 {
+    font-size: 1.5rem;
   }
   code {
     font-family:
@@ -50,4 +70,19 @@ const description = "A simple VRC favorite lister";
       Courier New,
       monospace;
   }
+  .astro-a {
+    position: absolute;
+    top: -32px;
+    left: 50%;
+    transform: translatex(-50%);
+    width: 220px;
+    height: auto;
+    z-index: -1;
+  }
+
+  /* LoginButtonの入力欄を消すため */
+  .none-visible {
+    display: none;
+  }
+  
 </style>
