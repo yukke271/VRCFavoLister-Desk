@@ -3,7 +3,6 @@ import { invoke } from "@tauri-apps/api";
 
 import { isLogin } from "~/src/components/Solid/StoreState";
 import InitState from "~/src/components/Solid/InitState";
-import LoginButton from "~/src/components/Solid/LoginButton";
 
 import { TooltipsGrayOut } from "~/src/components/Solid/TooltipsGrayOut";
 
@@ -59,7 +58,7 @@ export default function NavigationHeader() {
         <a href="/docs/">Docs</a>
 
         {/* ログイン状況によって表示されるコンポーネントを切り替えたい */}
-        <LoginButton />
+        <a href="/login/">Login</a>
       </nav>
     </header>
 
