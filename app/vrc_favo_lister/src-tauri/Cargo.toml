@@ -23,7 +23,7 @@ tokio = { version = "1.29.1", features = ["full"] }
 futures = "0.3.30"
 directories = "5.0.1"
 dunce = "1.0.4"
-reqwest = { version = "0.11.18", features = ["native-tls-alpn", "cookies", "gzip", "brotli", "deflate"] }
+reqwest = { version = "0.12.5", features = ["native-tls-alpn", "cookies", "gzip", "brotli", "deflate"] }
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.
