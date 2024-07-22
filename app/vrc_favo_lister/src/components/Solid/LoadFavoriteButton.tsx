@@ -1,7 +1,7 @@
 import { createSignal } from "solid-js";
 import { invoke } from "@tauri-apps/api";
 
-import { LodingScreen } from "~/src/components/Solid/LodingScreen";
+import { LodingScreen } from "~/src/components/Solid/LoadingScreen";
 
 export default function LoadFavoriteButton() {
   const [loadStatus, setLoadStatus] = createSignal(false);
