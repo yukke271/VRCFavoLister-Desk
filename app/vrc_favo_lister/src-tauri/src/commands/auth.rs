@@ -166,8 +166,14 @@ pub async fn login(username: &str, password: &str, otp_code: &str) -> Result<u8,
         // println!("{}: {:?}", header_name, header_value);
         if header_name == "set-cookie" {
             println!("set-cookie: {:?}", header_value);
-            // api_config.two_factor_auth = HeaderValue::from_str(header_value).unwrap();
-            api_config.two_factor_auth = Some(header_value.to_str().unwrap_or_default().to_string());
+            if header_value.to_str().unwrap().contains("authcookie") {
+                println!("authcookie: {:?}", header_value);
+                api_config.auth_cookie = Some(header_value.to_str().unwrap_or_default().to_string());
+            }
+            if header_value.to_str().unwrap().contains("twoFactorAuth") {
+                println!("twoFactorAuth: {:?}", header_value);
+                api_config.two_factor_auth = Some(header_value.to_str().unwrap_or_default().to_string());
+            }
         }
     }
     println!("success get header");
