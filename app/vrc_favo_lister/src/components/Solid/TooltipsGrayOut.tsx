@@ -30,11 +30,11 @@ export const TooltipsGrayOut: Component<{
           before:translate-x-1/2
           before:left-0
           
-          before:bottom-4
+          before:bottom-7
           before:border-8
 
           before:border-l-[12px] 
-          before:border-b-[20px] 
+          before:border-b-[18px] 
           before:border-r-[12px] 
           before:border-b-black
           before:border-transparent
