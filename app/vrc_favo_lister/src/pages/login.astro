@@ -1,12 +1,17 @@
 ---
 import Layout from "~/src/layouts/Layout.astro";
 import LoginButton from "~/src/components/Solid/LoginButton";
+import LoadFavoriteButton from "~/src/components/Solid/LoadFavoriteButton";
 ---
 
 <Layout>
   <main>
     <h1>ぶいちゃふぁぼりす</h1>
-    <!-- ログイン機能に関するページを表示する -->
-    <LoginButton />
+
+    <!-- ログイン用のボタン -->
+    <LoginButton client:only="solid-js" />
+
+    <!--  ログイン後にFavoriteを読み込む機能 -->
+    <LoadFavoriteButton client:only="solid-js" />
   </main>
 </Layout>
