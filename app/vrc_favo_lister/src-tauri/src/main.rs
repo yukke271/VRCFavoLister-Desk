@@ -3,32 +3,24 @@
 
 mod commands;
 mod structs;
-mod database;
 
-use tauri::{Manager, async_runtime::block_on};
-use database::sqlitedb::init_db_pool;
+use structs::app_state::AppState;
 
 fn main() {
     
-    // DBの初期化
-    let db_pool = block_on(init_db_pool()).expect("error while initializing database pool");
+    // let app_state = AppState::new();
 
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             commands::auth::login,
             commands::favorite::load_favorite,
+            commands::favorite::read_favorite,
         ])
-        .setup(|app| {
-            app.manage(db_pool);
-            Ok(())
-        })
+        // .setup(|app| {
+        //     app.manage(app_state);
+        //     Ok(())
+        // })
+        .manage(AppState::new())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
-
-/*
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}!", name)
-}
-*/
