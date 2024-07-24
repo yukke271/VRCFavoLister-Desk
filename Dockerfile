@@ -43,6 +43,9 @@ RUN apt-get install -y --no-install-recommends \
     novnc \
     websockify
 
+# Install SQLite
+RUN apt-get install -y sqlite3
+
 # Install Git
 # RUN apt-get install -y git
 
