@@ -1,5 +1,5 @@
 -- FavoriteWorld TransactionTable
-CREATE TABLE IF NOT EXISTS favorite_world (
+CREATE TABLE IF NOT EXISTS FavoriteWorld (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     description TEXT NOT NULL,
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS favorite_world (
 );
 
 -- FavoriteItemPlatform MasterTable
-CREATE TABLE IF NOT EXISTS favorite_item_platform (
+CREATE TABLE IF NOT EXISTS FavoriteItemPlatform (
     id INTEGER PRIMARY KEY,
     platform TEXT NOT NULL
 );
@@ -35,3 +35,21 @@ CREATE TABLE FavoriteWorldTagMap (
     FOREIGN KEY (worldId) REFERENCES FavoriteWorld(id),
     FOREIGN KEY (tagId) REFERENCES FavoriteWorldTags(id)
 );
+
+-- DatabaseVersionTable
+CREATE TABLE IF NOT EXISTS database_version (
+    id INTEGER PRIMARY KEY,
+    major INTEGER NOT NULL,
+    minor INTEGER NOT NULL,
+    patch INTEGER NOT NULL
+);
+
+-- FavoriteItemPlatform MasterTable Insert
+INSERT INTO favorite_item_platform (id, platform) VALUES (1, 'PCOnly');
+INSERT INTO favorite_item_platform (id, platform) VALUES (2, 'QuestOnly');
+INSERT INTO favorite_item_platform (id, platform) VALUES (3, 'CrossPlatform');
+
+-- DatabaseVersionTable Insert
+INSERT INTO database_version (id, major, minor, patch) VALUES (1, 0, 0, 1);
+
+
