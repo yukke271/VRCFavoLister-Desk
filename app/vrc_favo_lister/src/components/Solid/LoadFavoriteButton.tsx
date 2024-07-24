@@ -19,6 +19,10 @@ export default function LoadFavoriteButton() {
       setLoadStatus(false);
     });
 
+    // await invoke("read_favorite").then((res) => {
+    //   console.log(res as string);
+    //   setLoadStatus(false);
+    // });
   }
   
 
