@@ -1,7 +1,7 @@
 use reqwest::{Url, Client, RequestBuilder, Response, cookie::Jar, header::{self, USER_AGENT, HeaderMap, HeaderValue}};
 use std::{sync::Arc, time::Duration};
 
-use crate::structs::apiconfig::APIConfig;
+use crate::structs::app_state::{AppState, ContextTrait};
 
 /*
 
@@ -20,7 +20,7 @@ use crate::structs::apiconfig::APIConfig;
     6: 何らかの理由でログインに失敗した
 */
 #[tauri::command]
-pub async fn login(username: &str, password: &str, otp_code: &str) -> Result<u8, ()> { 
+pub async fn login(app_state: tauri::State<'_, AppState>, username: &str, password: &str, otp_code: &str) -> Result<u8, ()> { 
     
     // 引数内の文字列を表示
     println!("username: {}", username);
@@ -28,7 +28,7 @@ pub async fn login(username: &str, password: &str, otp_code: &str) -> Result<u8,
     println!("otp_code: {}", otp_code);
 
     // APIConfigを取得
-    let mut api_config = APIConfig::new();
+    let mut api_config = app_state.context.lock().unwrap().get_api_config();
     
     // usernameかpasswordが空の場合、エラー
     if api_config.username.is_none() {
@@ -206,21 +206,24 @@ pub async fn login(username: &str, password: &str, otp_code: &str) -> Result<u8,
         // bodyにemailOtpが含まれている場合、メールボックスの確認が必要な2段階認証
         if body.contains("emailOtp") {
             api_config.two_factor_type = Some("emailOtp".to_string());
-            let _ = api_config.save_config_file();
+            // Configを保存
+            app_state.context.lock().unwrap().set_api_config(api_config);
             return Ok(3);
         }
 
         // bodyにtotpが含まれている場合、認証アプリによる2段階認証
         if body.contains("totp") {
             api_config.two_factor_type = Some("totp".to_string());
-            let _ = api_config.save_config_file();
+            // Configを保存
+            app_state.context.lock().unwrap().set_api_config(api_config);
             return Ok(4);
         }
 
         // bodyにotpが含まれている場合、認証アプリによる2段階認証
         if body.contains("otp") {
             api_config.two_factor_type = Some("totp".to_string());
-            let _ = api_config.save_config_file();
+            // Configを保存
+            app_state.context.lock().unwrap().set_api_config(api_config);
             return Ok(4);
         }
 
@@ -230,7 +233,6 @@ pub async fn login(username: &str, password: &str, otp_code: &str) -> Result<u8,
     }
 
     // Configを保存
-    let _ = api_config.save_config_file();
-
+    app_state.context.lock().unwrap().set_api_config(api_config);
     return Ok(0);
 }
