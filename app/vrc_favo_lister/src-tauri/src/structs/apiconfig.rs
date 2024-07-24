@@ -16,7 +16,7 @@ use tauri::{api::path::{BaseDirectory, resolve_path}, Env};
 
 */
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct APIConfig {
   pub base_url: String,
@@ -85,8 +85,7 @@ impl APIConfig {
         "config.json",
         Some(BaseDirectory::AppLocalData) )
       .unwrap();
-
-    // println!("config_path: {:?}", config_path);
+    //println!("config_path: {:?}", config_path);
 
     // jsonデータが保存されたConfigファイルを読み込む
     // ファイルが見つからない場合はデフォルト値でファイルを作成し、APIConfigを返す
