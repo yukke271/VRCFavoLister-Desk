@@ -1,5 +1,5 @@
 use serde::{Serialize, Deserialize};
-use crate::structs::unity_package_from_api::UnityPackageFromAPI;
+use crate::structs::unity_package::UnityPackageFromAPI;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct FavoriteWorldFromAPI {
