@@ -18,17 +18,17 @@ CREATE TABLE IF NOT EXISTS FavoriteWorld (
 -- FavoriteItemPlatform MasterTable
 CREATE TABLE IF NOT EXISTS FavoriteItemPlatform (
     id INTEGER PRIMARY KEY,
-    platform TEXT NOT NULL
+    platform TEXT UNIQUE NOT NULL
 );
 
 -- FavoriteWorldTags AutoInsertTable
-CREATE TABLE FavoriteWorldTags (
+CREATE TABLE IF NOT EXISTS FavoriteWorldTags (
     id INTEGER PRIMARY KEY,
-    tags TEXT NOT NULL
+    tags TEXT UNIQUE NOT NULL 
 );
 
 -- FavoriteWorldTagMap TagMapTable
-CREATE TABLE FavoriteWorldTagMap (
+CREATE TABLE IF NOT EXISTS FavoriteWorldTagMap (
     id INTEGER PRIMARY KEY,
     worldId TEXT NOT NULL,
     tagId INTEGER NOT NULL,
@@ -37,7 +37,7 @@ CREATE TABLE FavoriteWorldTagMap (
 );
 
 -- DatabaseVersionTable
-CREATE TABLE IF NOT EXISTS database_version (
+CREATE TABLE IF NOT EXISTS databaseVersion (
     id INTEGER PRIMARY KEY,
     major INTEGER NOT NULL,
     minor INTEGER NOT NULL,
@@ -45,11 +45,11 @@ CREATE TABLE IF NOT EXISTS database_version (
 );
 
 -- FavoriteItemPlatform MasterTable Insert
-INSERT INTO favorite_item_platform (id, platform) VALUES (1, 'PCOnly');
-INSERT INTO favorite_item_platform (id, platform) VALUES (2, 'QuestOnly');
-INSERT INTO favorite_item_platform (id, platform) VALUES (3, 'CrossPlatform');
+INSERT INTO FavoriteItemPlatform (id, platform) VALUES (1, 'PCOnly');
+INSERT INTO FavoriteItemPlatform (id, platform) VALUES (2, 'QuestOnly');
+INSERT INTO FavoriteItemPlatform (id, platform) VALUES (3, 'CrossPlatform');
 
 -- DatabaseVersionTable Insert
-INSERT INTO database_version (id, major, minor, patch) VALUES (1, 0, 0, 1);
+INSERT INTO databaseVersion (id, major, minor, patch) VALUES (1, 0, 0, 1);
 
 
