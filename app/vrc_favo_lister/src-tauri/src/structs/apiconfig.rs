@@ -1,7 +1,8 @@
 use serde::{Serialize, Deserialize};
 use serde_json::Result;
-use std::{env, fs::File, io::{ErrorKind, Read, Write}};
-use tauri::{api::path::{BaseDirectory, resolve_path}, Env};
+use std::{fs::File, io::{ErrorKind, Read, Write}};
+
+use crate::commands::utils::{debug_log, get_file_path};
 
 /*
   app/vrc_favo_lister/src-tauri/src/apiconfig.rs
@@ -36,18 +37,12 @@ impl APIConfig {
   }
 
   pub fn save_config_file(&self) -> Result<()> {
+    // Configファイルのパスを取得
+    let config_path = get_file_path("config.json");
     // 自身の構造に合わせたjson形式でファイルを保存する
-    let context = tauri::generate_context!();
-    let config_path = resolve_path(
-        context.config(),
-        context.package_info(),
-        &Env::default(),
-        "config.json",
-        Some(BaseDirectory::AppLocalData) )
-      .unwrap();
-    let _ = match File::open(config_path.clone()) {
+    let _ = match File::open(&config_path) {
       Ok(_) => {
-        match File::create(config_path.clone()) {
+        match File::create(&config_path) {
           Ok(mut fc) => fc.write_all(serde_json::to_string(&self).unwrap().as_bytes()),
           Err(err) => panic!("Cannot created file: {:?}", err),
         }
@@ -55,9 +50,8 @@ impl APIConfig {
       Err(err) => panic!("Cannot open file: {:?}", err),
     };
 
-    println!("Save config file: {:?}", config_path.clone());
-    // println!("Save config: {:?}", self);
-
+    debug_log(format!("Save config file: {:?}", &config_path));
+    debug_log(format!("Save config: {:?}", self));
     Ok(())
   }
 
@@ -74,28 +68,18 @@ impl APIConfig {
       password: None,
     };
 
-    // contextを取得する
-    let context = tauri::generate_context!();
-
-    // Configのパスを取得
-    let config_path = resolve_path(
-        context.config(),
-        context.package_info(),
-        &Env::default(),
-        "config.json",
-        Some(BaseDirectory::AppLocalData) )
-      .unwrap();
-    //println!("config_path: {:?}", config_path);
+    // Configファイルのパスを取得
+    let config_path = get_file_path("config.json");
 
     // jsonデータが保存されたConfigファイルを読み込む
     // ファイルが見つからない場合はデフォルト値でファイルを作成し、APIConfigを返す
-    let f = File::open(config_path.clone());
+    let f = File::open(&config_path);
     let mut f = match f {
       Ok(file) => file,
       Err(ref err) if err.kind() == ErrorKind::NotFound => {
-        match File::create(config_path.clone()) {
+        match File::create(&config_path) {
           Ok(mut fc) => {
-            println!("Create file: {:?}", config_path.clone());
+            debug_log(format!("Create file: {:?}", &config_path));
             let _ = fc.write_all(serde_json::to_string(&api_config_default).unwrap().as_bytes());         
             return Ok(api_config_default);
           },
@@ -108,14 +92,14 @@ impl APIConfig {
     // 正常にファイルを読み込めた場合ここに到達する
     let mut config_str = String::new();
     match f.read_to_string(&mut config_str) {
-        Ok(_) => { println!("Read file: {:?}", config_path.clone()); },
+        Ok(_) => { debug_log(format!("Read file: {:?}", config_path.clone())); },
         Err(err) => { panic!("Cannot read file: {:?}", err); }
     }
-    // println!("config_str: {}", config_str);
+    debug_log(format!("config_str: {}", config_str));
 
     // ファイルの中身をConfig構造体に合わせて展開する
     let config: Self = serde_json::from_str(&config_str).unwrap();
-    // println!("config: {:?}", config);
+    debug_log(format!("Load config: {:?}", config));
 
     return Ok(config);
   }
