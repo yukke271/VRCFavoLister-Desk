@@ -4,23 +4,16 @@
 mod commands;
 mod structs;
 
-use structs::app_state::AppState;
-
 fn main() {
-    
-    // let app_state = AppState::new();
-
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             commands::auth::login,
-            commands::favorite::load_favorite,
+            commands::auth::logout,
+            commands::auth::check_cookie,
+            commands::favorite::load_favorite_worlds,
             commands::favorite::read_favorite,
         ])
-        // .setup(|app| {
-        //     app.manage(app_state);
-        //     Ok(())
-        // })
-        .manage(AppState::new())
+        .manage(structs::app_state::AppState::new())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
