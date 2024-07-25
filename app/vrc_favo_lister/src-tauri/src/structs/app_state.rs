@@ -2,6 +2,7 @@ use std::{mem, sync::Mutex};
 use tauri::async_runtime::block_on;
 use sqlx::SqlitePool;
 use crate::commands::database::init_db_pool;
+use crate::commands::utils::debug_log;
 use crate::structs::apiconfig::APIConfig;
 
 #[derive(Debug)]
@@ -66,20 +67,6 @@ fn check_app_data_dir() {
   if !app_data_dir.exists() {
     std::fs::create_dir_all(app_data_dir.clone()).expect("Cannot create app data directory");
   }
-
-  println!("App data directory: {:?}", app_data_dir.clone());
+  debug_log(format!("App data directory: {:?}", app_data_dir.clone()));
 }
 
-// TODO:ファイルパスを返す関数を作る
-// pub(crate) fn get_file_path(file_name: &str) -> String {
-//   let context = tauri::generate_context!();
-//   let app_data_dir = tauri::api::path::resolve_path(
-//     context.config(),
-//     context.package_info(),
-//     &tauri::api::path::Env::default(),
-//     "",
-//     Some(tauri::api::path::BaseDirectory::AppLocalData)
-//   ).unwrap();
-//   // PathbufをStringに変換
-//   app_data_dir.into_os_string().into_string().unwrap() + file_name;
-// }
