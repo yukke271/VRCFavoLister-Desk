@@ -1,10 +1,12 @@
-use reqwest::{Url, Client, Response, cookie::Jar, header::{self, USER_AGENT, HeaderMap, HeaderValue}};
-use std::{sync::Arc, time::Duration};
+use reqwest::{Client, Response, header::HeaderMap};
+use std::time::Duration;
 
 use crate::structs::app_state::{AppState, ContextTrait};
+use crate::structs::app_struct::AppFavoriteWorldCard;
 use crate::structs::favorite_world::FavoriteWorldFromAPI;
 
 use crate::commands::database::{ insert_favorite_world, select_favorite_world };
+use crate::commands::utils::{debug_log, create_headers, create_cookie_jar, create_request_client};
 
 /*
 
@@ -20,7 +22,7 @@ use crate::commands::database::{ insert_favorite_world, select_favorite_world };
 
 */
 #[tauri::command]
-pub async fn load_favorite(app_state: tauri::State<'_, AppState>) -> Result<String, ()> { 
+pub async fn load_favorite_worlds(app_state: tauri::State<'_, AppState>) -> Result<Vec<FavoriteWorldFromAPI>, String> { 
 
     // APIConfigを取得
     let api_config = app_state.context.lock().unwrap().get_api_config();
@@ -28,36 +30,28 @@ pub async fn load_favorite(app_state: tauri::State<'_, AppState>) -> Result<Stri
     let db_pool = app_state.context.lock().unwrap().db_pool.clone();
     
     if api_config.two_factor_auth.is_none() {
-        println!("DebugLog:2段階認証未設定");
-        return Ok("2段階認証が未設定です".to_string()); 
+        debug_log("2段階認証未設定");
+        return Err("2段階認証未設定".to_string());
     }
 
-    let mut headers: HeaderMap  = HeaderMap::new();
-    headers.insert(USER_AGENT, HeaderValue::from_str(&api_config.user_agent.clone()).unwrap());
-    headers.insert("Content-Type", HeaderValue::from_str("application/json").unwrap());
-    headers.insert(header::ACCEPT_ENCODING, HeaderValue::from_static("gzip, deflate, br"));
+    // 整形できなかったデータを格納する変数
+    let mut failed_data: Vec<FavoriteWorldFromAPI> = Vec::new();
 
-    let cookie_jar = Arc::new(Jar::default());
-    cookie_jar.add_cookie_str(&("apiKey=".to_owned() + &api_config.api_key.clone()), &Url::parse(&api_config.base_url).unwrap());
-    cookie_jar.add_cookie_str(&api_config.auth_cookie.clone().unwrap(), &Url::parse(&api_config.base_url).unwrap());
-    cookie_jar.add_cookie_str(&api_config.two_factor_auth.clone().unwrap(), &Url::parse(&api_config.base_url).unwrap());
-    
-    // let mut params = HashMap::new();
-    // params.insert("n", "200");
-    // params.insert("offset", "0");
-
-    let client: Client  = reqwest::Client::builder()
-        .default_headers(headers.clone())
-        .cookie_provider(cookie_jar) 
-        .timeout(Duration::from_secs(10))
-        .build()
-        .unwrap();
+    // ヘッダー設定
+    let headers: HeaderMap = create_headers(&api_config.user_agent.clone());
+    // クッキージャーを作成
+    let cookie_jar = create_cookie_jar(&api_config);
+    // リクエストクライアントを作成        
+    let client: Client = create_request_client(
+        headers.clone(),
+        cookie_jar.clone()
+    );
 
     // await中にstateが変更される可能性があるため、base_urlを変数に格納しておく
     let base_url = api_config.base_url.clone();
 
     // リクエスト発行
-    println!("DebugLog:リクエスト発行");
+    debug_log("リクエスト発行");
     let response1:Response = client
         .get(base_url + "worlds/favorites")
         .headers(headers.clone())
@@ -79,20 +73,21 @@ pub async fn load_favorite(app_state: tauri::State<'_, AppState>) -> Result<Stri
         .text()
         .await
         .unwrap();
-    // println!("Response is : \n{}", body1);
+    // debug_log(format!("Response is : \n{}", body1));
     let body_json1: Vec<FavoriteWorldFromAPI> = serde_json::from_str(&body1)
         .expect("Failed to parse JSON");
-    println!("Response is : \n{:?}", body_json1);
+    // debug_log(format!("Response is : \n{:?}", body_json1));
 
     // DBに格納
     for world in body_json1 {
         if world.tags.is_none() {
-            println!("DebugLog:タグが存在しないデータをスキップ");
-            println!("DebugLog:{:?}", world);
+            debug_log("タグが存在しないデータをスキップ");
+            debug_log(format!("{:?}", world));
+            failed_data.push(world);
             continue;
         }
-        println!("DebugLog:DBに格納");
-        println!("DebugLog:{:?}", world);
+        debug_log("DBに格納");
+        debug_log(format!("{:?}", world));
         insert_favorite_world(&db_pool, world).await.unwrap();
     }
 
@@ -100,12 +95,12 @@ pub async fn load_favorite(app_state: tauri::State<'_, AppState>) -> Result<Stri
     // 1分経過していない場合は、1分経過するまで待機する
     // 1分経過している場合は、APIを取得する
     if timer.elapsed().as_secs() < 60 {
-        println!("DebugLog:API取得制限中");
+        debug_log(format!("DebugLog:残り時間 : {:?}", 60 - timer.elapsed().as_secs()));
         tokio::time::sleep(Duration::from_secs(60) - timer.elapsed()).await;
     }
 
     // リクエスト発行
-    println!("DebugLog:リクエスト発行");
+    debug_log("DebugLog:リクエスト発行");
     let response2:Response = client
         .get(api_config.base_url.clone() + "worlds/favorites")
         .headers(headers.clone())
@@ -121,29 +116,30 @@ pub async fn load_favorite(app_state: tauri::State<'_, AppState>) -> Result<Stri
         .text()
         .await
         .unwrap();
-    // println!("Response is : \n{}", body2);
+    // debug_log(format!("Response is : \n{}", body2));
     let body_json2: Vec<FavoriteWorldFromAPI> = serde_json::from_str(&body2)
         .expect("Failed to parse JSON");
-    println!("Response is : \n{:?}", body_json2);
+    // debug_log(format!("Response is : \n{:?}", body_json2));
 
     // DBに格納
     for world in body_json2 {
         if world.tags.is_none() {
-            println!("DebugLog:タグが存在しないデータをスキップ");
-            println!("DebugLog:{:?}", world);
+            debug_log("タグが存在しないデータをスキップ");
+            debug_log(format!("{:?}", world));
+            failed_data.push(world);
             continue;
         }
-        println!("DebugLog:DBに格納");
-        println!("DebugLog:{:?}", world);
+        debug_log("DBに格納");
+        debug_log(format!("{:?}", world));
         insert_favorite_world(&db_pool, world).await.unwrap();
     }
     
-    return Ok("処理の完了".to_string()); 
+    return Ok(failed_data); 
 }
 
 /* read favorite dbから読み込んだデータを返す */
 #[tauri::command]
-pub async fn read_favorite(app_state: tauri::State<'_, AppState>) -> Result<Vec<FavoriteWorldFromAPI>, ()> { 
+pub async fn read_favorite(app_state: tauri::State<'_, AppState>) -> Result<Vec<AppFavoriteWorldCard>, ()> { 
     // DBPoolを取得
     let db_pool = app_state.context.lock().unwrap().db_pool.clone();
     let result = select_favorite_world(&db_pool).await.unwrap();
