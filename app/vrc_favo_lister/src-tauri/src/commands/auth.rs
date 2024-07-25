@@ -1,5 +1,4 @@
-use reqwest::{Url, Client, RequestBuilder, Response, cookie::Jar, header::{self, USER_AGENT, HeaderMap, HeaderValue}};
-use std::{sync::Arc, time::Duration};
+use reqwest::{Client, RequestBuilder, Response, header::HeaderMap};
 
 use crate::structs::app_state::{AppState, ContextTrait};
 use crate::commands::utils::{debug_log, create_headers, create_cookie_jar, create_request_client};
