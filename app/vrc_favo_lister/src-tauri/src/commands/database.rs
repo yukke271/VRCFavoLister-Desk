@@ -10,7 +10,14 @@ use sqlx::{
     SqlitePool,Row,
 };
 
-use crate::structs::favorite_world::FavoriteWorldFromAPI;
+use crate::structs::favorite_world::{FavoriteWorldFromAPI};
+
+use crate::structs::app_struct::FavoriteWorldToApp;
+
+use crate::structs::db_structs::{
+    SelectFavoriteWorldTag,
+    SelectFavoriteItemPlatform,
+};
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
@@ -38,7 +45,7 @@ pub async fn init_db_pool() -> Result<SqlitePool> {
         .synchronous(SqliteSynchronous::Normal);
     
     // コネクションプールの作成
-    let db_pool = SqlitePoolOptions::new()
+    let db_pool:SqlitePool = SqlitePoolOptions::new()
         .connect_with(connection_options)
         .await
         .unwrap();
@@ -49,7 +56,7 @@ pub async fn init_db_pool() -> Result<SqlitePool> {
         println!("DB initialized");
 
         // 動作確認の実行
-        // let _ = select_favorite_world(&db_pool).await.unwrap();
+        // let _ = select_favorite_item_platform(&db_pool).await.unwrap();
         // println!("DB test passed");
     }
 
@@ -58,10 +65,12 @@ pub async fn init_db_pool() -> Result<SqlitePool> {
 
 async fn init_db_migrate(pool: &SqlitePool) -> Result<()> {
     // TODO:マイグレーションを実行してもテーブルが作成されない問題を確認する
-
+    // 正確には、「_sqlx_migrations」テーブルのみ作成されるが、その他のテーブルは作成されない。
+    // そのため、マイグレーションファイルを直接実行することでテーブルを作成する必要がある？
+    // Resolve:マイグレーションファイルのファイル名の頭に「000_」をつけることで解決した。
 
     // マイグレーションの実行
-    sqlx::migrate!("src/sql").run(pool).await.unwrap();
+    sqlx::migrate!("./src/sql").run(pool).await.unwrap();
     Ok(())
 }
 
@@ -101,49 +110,26 @@ pub async fn insert_favorite_world(pool: &SqlitePool, world: FavoriteWorldFromAP
     println!("image_id: {}", image_id);
 
     // FavoriteWorldテーブルにワールド情報を挿入する
-    // sqlx::query(
-    //     "INSERT INTO FavoriteWorld 
-    //     (id, name, description, authorName, releaseStatus, recommendedCapacity, capacity, previewYoutubeId, imageId, publicationDate, updated_at, platform)
-    //     VALUES
-    //     (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) 
-    //     ON CONFLICT(id) DO UPDATE SET 
-    //     name = ?, description = ?, authorName = ?, releaseStatus = ?, recommendedCapacity = ?, capacity = ?, previewYoutubeId = ?, imageId = ?, publicationDate = ?, updated_at = ?, platform = ?"
-    //     )
-    //     .bind(world.world_id.clone())
-    //     .bind(world.world_name.clone())
-    //     .bind(world.description.clone())
-    //     .bind(world.author_name.clone())
-    //     .bind(world.release_status.clone())
-    //     .bind(world.recommended_capacity)
-    //     .bind(world.capacity)
-    //     .bind(world.preview_youtube_id.clone())
-    //     .bind(image_id.clone())
-    //     .bind(world.publication_date.clone())
-    //     .bind(world.updated_at.clone())
-    //     .bind(platform_id)
-    //     .bind(world.world_name.clone())
-    //     .bind(world.description.clone())
-    //     .bind(world.author_name.clone())
-    //     .bind(world.release_status.clone())
-    //     .bind(world.recommended_capacity)
-    //     .bind(world.capacity)
-    //     .bind(world.preview_youtube_id.clone())
-    //     .bind(image_id.clone())
-    //     .bind(world.publication_date.clone())
-    //     .bind(world.updated_at.clone())
-    //     .bind(platform_id)
-    //     .execute(tx.deref_mut())
-    //     .await
-    //     .expect("Failed to insert FavoriteWorld");
-    
-
     sqlx::query(
         "INSERT INTO FavoriteWorld 
         (id, name, description, authorName, releaseStatus, recommendedCapacity, capacity, previewYoutubeId, imageId, publicationDate, updated_at, platform)
         VALUES
         (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) 
+        ON CONFLICT(id) DO UPDATE SET 
+        name = ?, description = ?, authorName = ?, releaseStatus = ?, recommendedCapacity = ?, capacity = ?, previewYoutubeId = ?, imageId = ?, publicationDate = ?, updated_at = ?, platform = ?
         ")
         .bind(world.world_id.clone())
+        .bind(world.world_name.clone())
+        .bind(world.description.clone())
+        .bind(world.author_name.clone())
+        .bind(world.release_status.clone())
+        .bind(world.recommended_capacity)
+        .bind(world.capacity)
+        .bind(world.preview_youtube_id.clone())
+        .bind(image_id.clone())
+        .bind(world.publication_date.clone())
+        .bind(world.updated_at.clone())
+        .bind(platform_id)
         .bind(world.world_name.clone())
         .bind(world.description.clone())
         .bind(world.author_name.clone())
@@ -201,10 +187,10 @@ pub async fn insert_favorite_world(pool: &SqlitePool, world: FavoriteWorldFromAP
 
 // FavoriteWorldテーブルからワールド情報を取得する
 // todo:いずれマクロ版を使用する...
-pub async fn select_favorite_world(pool: &SqlitePool) -> Result<Vec<FavoriteWorldFromAPI>> {
+pub async fn select_favorite_world(pool: &SqlitePool) -> Result<Vec<FavoriteWorldToApp>> {
     
     // 下記のquery_as関数を使用したコードでは、「the trait bound `&mut &Pool<Sqlite>: Executor<'_>` is not satisfied」というエラーが発生するため、別の方法を考える
-    // let worlds: Vec<FavoriteWorldFromAPI> = sqlx::query_as(
+    // let worlds: Vec<FavoriteWorldToApp> = sqlx::query_as(
     //         "SELECT * FROM FavoriteWorld"
     //     )
     //     .fetch_all(&mut pool)
@@ -215,11 +201,28 @@ pub async fn select_favorite_world(pool: &SqlitePool) -> Result<Vec<FavoriteWorl
     // query_asマクロでは、ビルド時には先にsqlx用のSQLクエリキャッシュを作っておかないといけないので、今回は断念。
 
     // query関数を使用して、Rowを取得する方法でどうにかする
-    const SQL1: &str = "SELECT * FROM FavoriteWorld";
+    const SQL1: &str = "
+        SELECT
+            fw.id,
+            fw.name,
+            fw.description,
+            fw.authorName,
+            fw.releaseStatus,
+            fw.recommendedCapacity,
+            fw.capacity,
+            fw.previewYoutubeId,
+            fw.imageId,
+            fw.publicationDate,
+            fw.updated_at,
+            fip.platform AS platform
+        FROM
+            FavoriteWorld fw
+        JOIN
+            FavoriteItemPlatform fip ON fw.platform = fip.id;";
     let mut rows = sqlx::query(SQL1).fetch(pool);
-    let mut worlds: Vec<FavoriteWorldFromAPI> = Vec::new();
+    let mut worlds: Vec<FavoriteWorldToApp> = Vec::new();
     while let Ok(Some(row)) = rows.try_next().await {
-        let world = FavoriteWorldFromAPI {
+        let world = FavoriteWorldToApp {
             world_id: row.get(0),
             world_name: row.get(1),
             description: row.get(2),
@@ -231,11 +234,62 @@ pub async fn select_favorite_world(pool: &SqlitePool) -> Result<Vec<FavoriteWorl
             image_url: row.get(8),
             publication_date: row.get(9),
             updated_at: row.get(10),
-            tags: None,
-            unity_packages: None,
+            platform: row.get(11),
         };
         worlds.push(world);
     }
 
     Ok(worlds)
+}
+
+// FavoriteWorldTagsテーブルから、world_idと紐づいたタグの一覧を取得する
+pub async fn select_favorite_world_tags(pool: &SqlitePool, world_id: String) -> Result<Vec<String>> {
+    
+    let mut conn = pool
+        .acquire()
+        .await
+        .expect("Failed to acquire connection");
+    
+    let res = sqlx::query_as::<_, SelectFavoriteWorldTag>(
+        "SELECT
+            fwt.tags
+        FROM
+            FavoriteWorldTags fwt
+        JOIN
+            FavoriteWorldTagMap fwtm ON fwt.id = fwtm.tagId
+        WHERE
+            fwtm.worldId = ?;",
+        )
+        .bind(world_id)
+        .fetch_all(&mut *conn)
+        .await
+        .expect("Failed to select FavoriteWorldTags");
+    
+    let tags: Vec<String> = res.iter().map(|tag| tag.tag.clone()).collect();
+    Ok(tags)
+}
+
+// FavoriteItemPlatformテーブルから、id(u32)を元にplatform(string)を取得する
+pub async fn select_favorite_item_platform(pool: &SqlitePool, platform_id: u32) -> Result<String> {
+
+    let mut conn = pool
+        .acquire()
+        .await
+        .expect("Failed to acquire connection");
+    
+    let res = sqlx::query_as::<_, SelectFavoriteItemPlatform>(
+        "SELECT 
+            platform
+        FROM
+            FavoriteItemPlatform
+        WHERE
+            id = ?;",
+        )
+        .bind(platform_id)
+        .fetch_one(&mut *conn)
+        .await
+        .expect("Failed to select FavoriteItemPlatform");
+    
+    let platform: String = res.platform.clone();
+    Ok(platform)
 }
