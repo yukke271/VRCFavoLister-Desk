@@ -2,7 +2,7 @@ use reqwest::{Url, Client, RequestBuilder, Response, cookie::Jar, header::{self,
 use std::{sync::Arc, time::Duration};
 
 use crate::structs::app_state::{AppState, ContextTrait};
-use crate::commands::utils::debug_log;
+use crate::commands::utils::{debug_log, create_headers, create_cookie_jar, create_request_client};
 
 /*
 
@@ -40,57 +40,29 @@ pub async fn login(app_state: tauri::State<'_, AppState>, username: &str, passwo
     let mut api_config = app_state.context.lock().unwrap().get_api_config();
     
     // usernameかpasswordが空の場合、エラー
-    if api_config.username.is_none() {
-        if username.is_empty() {
+    if api_config.username.is_none() || api_config.password.is_none() {
+        if username.is_empty() || password.is_empty() {
+            debug_log("usernameかpasswordが空");
             return Ok(2);
         } else {
             api_config.username = Some(username.to_string());
-        }
-    }
-    if api_config.password.is_none() {
-        if password.is_empty() {
-            return Ok(2);
-        } else {
             api_config.password = Some(password.to_string());
         }
     }
 
-    debug_log("ヘッダー設定");
     // ヘッダー設定
-    let mut headers: HeaderMap  = HeaderMap::new();
-    headers.insert(USER_AGENT, HeaderValue::from_str(&api_config.user_agent.clone()).unwrap());
-    headers.insert("Content-Type", HeaderValue::from_str("application/json").unwrap());
-    headers.insert(header::ACCEPT_ENCODING, HeaderValue::from_static("gzip, deflate, br"));
-
-    debug_log("クッキージャー作成");
+    let headers: HeaderMap = create_headers(&api_config.user_agent.clone());
     // クッキージャーを作成
-    let cookie_jar = Arc::new(Jar::default());
-    cookie_jar.add_cookie_str(&("apiKey=".to_owned() + &api_config.api_key.clone()), &Url::parse(&api_config.base_url).unwrap());
-    
-    // authCookieがある場合設定する
-    if !api_config.auth_cookie.is_none() && !otp_code.is_empty() {
-        debug_log("authCookie設定する");
-        cookie_jar.add_cookie_str(&api_config.auth_cookie.clone().unwrap(), &Url::parse(&api_config.base_url).unwrap());
-    }
-
-    // two_factor_authがある場合設定する
-    if !api_config.two_factor_auth.is_none() {
-        debug_log("2段階認証設定");
-        cookie_jar.add_cookie_str(&api_config.two_factor_auth.clone().unwrap(), &Url::parse(&api_config.base_url).unwrap());
-    }
-
-    debug_log("リクエストクライアント作成");
+    let cookie_jar = create_cookie_jar(&api_config);
     // リクエストクライアントを作成        
-    let client: Client  = reqwest::Client::builder()
-        .default_headers(headers.clone())
-        .cookie_provider(cookie_jar) 
-        .timeout(Duration::from_secs(10))
-        .build()
-        .unwrap();
+    let client: Client = create_request_client(
+        headers.clone(),
+        cookie_jar.clone()
+    );
     
-    debug_log("リクエストビルダー作成");
     // リクエスト発行準備
     // エンドポイントの設定
+    debug_log("リクエストビルダー作成");
     let mut user_request:RequestBuilder = client
         .get(api_config.base_url.clone() + "auth/user")
         .headers(headers.clone())
@@ -99,16 +71,12 @@ pub async fn login(app_state: tauri::State<'_, AppState>, username: &str, passwo
     debug_log("2段階認証コード設定");
     // 2段階認証のコードがある場合、postで認証
     if !otp_code.is_empty() {
-
         if api_config.two_factor_type.is_none() {
             // 2段階認証の方式が未設定の場合エラー
             debug_log("2段階認証方式未設定");
             return Ok(1);
         }
-        let factor_type: String = api_config
-            .two_factor_type
-            .clone()
-            .expect("two_factor_type is None");
+        let factor_type: String = api_config.two_factor_type.clone().expect("two_factor_type is None");
 
         // 送信用の変数を作成
         // '{ "code": "######" }'
@@ -233,24 +201,14 @@ pub async fn logout(app_state: tauri::State<'_, AppState>) -> Result<u8, ()> {
     let mut api_config = app_state.context.lock().unwrap().get_api_config();
 
     // ヘッダー設定
-    let mut headers: HeaderMap  = HeaderMap::new();
-    headers.insert(USER_AGENT, HeaderValue::from_str(&api_config.user_agent.clone()).unwrap());
-    headers.insert("Content-Type", HeaderValue::from_str("application/json").unwrap());
-    headers.insert(header::ACCEPT_ENCODING, HeaderValue::from_static("gzip, deflate, br"));
-
+    let headers: HeaderMap = create_headers(&api_config.user_agent.clone());
     // クッキージャーを作成
-    let cookie_jar = Arc::new(Jar::default());
-    cookie_jar.add_cookie_str(&("apiKey=".to_owned() + &api_config.api_key.clone()), &Url::parse(&api_config.base_url).unwrap());
-    cookie_jar.add_cookie_str(&api_config.auth_cookie.clone().unwrap(), &Url::parse(&api_config.base_url).unwrap());
-    cookie_jar.add_cookie_str(&api_config.two_factor_auth.clone().unwrap(), &Url::parse(&api_config.base_url).unwrap());
-    
-    // リクエストクライアント作成        
-    let client: Client  = reqwest::Client::builder()
-        .default_headers(headers.clone())
-        .cookie_provider(cookie_jar) 
-        .timeout(Duration::from_secs(10))
-        .build()
-        .unwrap();
+    let cookie_jar = create_cookie_jar(&api_config);
+    // リクエストクライアントを作成        
+    let client: Client = create_request_client(
+        headers.clone(),
+        cookie_jar.clone()
+    );
     
     // リクエスト発行準備
     // エンドポイントの設定
@@ -294,24 +252,14 @@ pub async fn check_cookie(app_state: tauri::State<'_, AppState>) -> Result<bool,
     let api_config = app_state.context.lock().unwrap().get_api_config();
     
     // ヘッダー設定
-    let mut headers: HeaderMap  = HeaderMap::new();
-    headers.insert(USER_AGENT, HeaderValue::from_str(&api_config.user_agent.clone()).unwrap());
-    headers.insert("Content-Type", HeaderValue::from_str("application/json").unwrap());
-    headers.insert(header::ACCEPT_ENCODING, HeaderValue::from_static("gzip, deflate, br"));
-
+    let headers: HeaderMap = create_headers(&api_config.user_agent.clone());
     // クッキージャーを作成
-    let cookie_jar = Arc::new(Jar::default());
-    cookie_jar.add_cookie_str(&("apiKey=".to_owned() + &api_config.api_key.clone()), &Url::parse(&api_config.base_url).unwrap());
-    cookie_jar.add_cookie_str(&api_config.auth_cookie.clone().unwrap(), &Url::parse(&api_config.base_url).unwrap());
-    cookie_jar.add_cookie_str(&api_config.two_factor_auth.clone().unwrap(), &Url::parse(&api_config.base_url).unwrap());
-    
-    // リクエストクライアント作成        
-    let client: Client  = reqwest::Client::builder()
-        .default_headers(headers.clone())
-        .cookie_provider(cookie_jar) 
-        .timeout(Duration::from_secs(10))
-        .build()
-        .unwrap();
+    let cookie_jar = create_cookie_jar(&api_config);
+    // リクエストクライアントを作成        
+    let client: Client = create_request_client(
+        headers.clone(),
+        cookie_jar.clone()
+    );
     
     // リクエスト発行準備
     // エンドポイントの設定
