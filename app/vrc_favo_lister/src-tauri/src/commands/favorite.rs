@@ -95,12 +95,12 @@ pub async fn load_favorite_worlds(app_state: tauri::State<'_, AppState>) -> Resu
     // 1分経過していない場合は、1分経過するまで待機する
     // 1分経過している場合は、APIを取得する
     if timer.elapsed().as_secs() < 60 {
-        debug_log(format!("DebugLog:残り時間 : {:?}", 60 - timer.elapsed().as_secs()));
+        debug_log(format!("残り時間 : {:?}", 60 - timer.elapsed().as_secs()));
         tokio::time::sleep(Duration::from_secs(60) - timer.elapsed()).await;
     }
 
     // リクエスト発行
-    debug_log("DebugLog:リクエスト発行");
+    debug_log("リクエスト発行");
     let response2:Response = client
         .get(api_config.base_url.clone() + "worlds/favorites")
         .headers(headers.clone())
@@ -134,6 +134,8 @@ pub async fn load_favorite_worlds(app_state: tauri::State<'_, AppState>) -> Resu
         insert_favorite_world(&db_pool, world).await.unwrap();
     }
     
+    debug_log(format!("DebugLog:failed_data : {:?}", failed_data));
+    debug_log("処理完了");
     return Ok(failed_data); 
 }
 
