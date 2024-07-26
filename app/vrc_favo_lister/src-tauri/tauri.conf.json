@@ -37,7 +37,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "dev.yukke.vrc_favo_lister",
+      "identifier": "dev.yukke.vrc-favo-lister",
       "longDescription": "",
       "macOS": {
         "entitlements": null,
