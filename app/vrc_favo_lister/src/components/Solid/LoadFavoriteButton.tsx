@@ -9,20 +9,10 @@ export default function LoadFavoriteButton() {
   async function loadFavoriteButton() {
     setLoadStatus(true);
     
-    // デバック用に10秒間ローディングする
-    // setTimeout(() => {
-    //   setLoadStatus(false);
-    // }, 10000);
-
-    await invoke("load_favorite").then((res) => {
+    await invoke("load_favorite_worlds").then((res) => {
       console.log(res as string);
       setLoadStatus(false);
     });
-
-    // await invoke("read_favorite").then((res) => {
-    //   console.log(res as string);
-    //   setLoadStatus(false);
-    // });
   }
   
 
