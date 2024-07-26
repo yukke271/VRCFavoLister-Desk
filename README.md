@@ -14,7 +14,7 @@ This application does not encourage client modification, avatar ripping, or any 
 Please be aware of the possibility of banning your account due to excessive function calls, etc., as it uses an API that is not officially supported, and use at your own risk. <br />
 Although we do not use a dedicated in-game client API called “Photon” during development, and we make every effort to suppress excessive API calls, the developer assumes no responsibility for any damages or other losses caused by the use of this tool. Please understand that the developer cannot be held responsible for any damage caused by the use of this tool. <br />
 
-以下、VRChat APIの使用に関するVRChatチームの公式な回答です。
+以下、VRChat APIの使用に関するVRChatチームの公式な回答です。<br />
 Below is the official response from the VRChat team regarding the use of the VRChat API.
 ```
 Use of the API using applications other than the approved methods (website, VRChat application) are not officially supported. You may use the API for your own application, but keep these guidelines in mind:
