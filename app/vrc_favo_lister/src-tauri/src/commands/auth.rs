@@ -37,6 +37,8 @@ pub async fn login(app_state: tauri::State<'_, AppState>, username: &str, passwo
 
     // APIConfigを取得
     let mut api_config = app_state.context.lock().unwrap().get_api_config();
+    // is_loginを取得
+    let is_login = app_state.context.lock().unwrap().get_is_login();
     
     // usernameかpasswordが空の場合、エラー
     if api_config.username.is_none() || api_config.password.is_none() {
@@ -188,6 +190,7 @@ pub async fn login(app_state: tauri::State<'_, AppState>, username: &str, passwo
 
     // Configを保存
     app_state.context.lock().unwrap().set_api_config(api_config);
+    app_state.context.lock().unwrap().set_is_login(true);
     debug_log("ログイン成功");
     return Ok(0);
 }
@@ -237,6 +240,7 @@ pub async fn logout(app_state: tauri::State<'_, AppState>) -> Result<u8, ()> {
 
     // Configを保存
     app_state.context.lock().unwrap().set_api_config(api_config);
+    app_state.context.lock().unwrap().set_is_login(false);
 
     debug_log("ログアウト成功");
     return Ok(0);
@@ -276,9 +280,20 @@ pub async fn check_cookie(app_state: tauri::State<'_, AppState>) -> Result<bool,
     // リクエストの成否を確認
     if !user_response.status().is_success() {
         debug_log("cookieが有効ではありません");
+        app_state.context.lock().unwrap().set_is_login(false);
         return Ok(false);
     }
 
     debug_log("cookieが有効です");
+    app_state.context.lock().unwrap().set_is_login(true);
     return Ok(true);
+}
+
+// app_stateのis_loginを取得
+#[tauri::command]
+pub async fn get_is_login(app_state: tauri::State<'_, AppState>) -> Result<bool, ()> { 
+    
+    // is_loginを取得
+    let is_login = app_state.context.lock().unwrap().get_is_login();
+    return Ok(is_login);
 }
