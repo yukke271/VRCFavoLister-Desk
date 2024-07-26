@@ -1,12 +1,25 @@
 ---
 import Layout from "~/src/layouts/Layout.astro";
+import ReadFavoriteButton from "~/src/components/Solid/ReadFavoriteButton";
 ---
 
 <Layout>
-  <main>
-    <h1>ぶいちゃふぁぼりす</h1>
+  <main class="w-full">
+    <h1 class="text-center">ぶいちゃふぁぼりす</h1>
     <!-- お気に入り(Favorite)に関する機能を実装する -->
     <!-- インポートからのリスト化、タグ付け、メモ、 等... -->
+
+    <!-- 
+      TODO:
+      DBにテーブルを追加して、お気に入りリスト(分類機能) を実装する 
+      その時に、ボタンのコンポーネントを、読み込み時にリスト一覧を取得するものに変更し、
+      リストの追加、削除、編集、
+      タグで検索、
+      メモの追加、削除、編集、等の機能を実装する
+    -->
+
+    <!-- 読み込みボタン -->
+    <ReadFavoriteButton client:only="solid-js" />
 
   </main>
 </Layout>
