@@ -1,40 +1,29 @@
-use tauri::{api::path::{BaseDirectory, resolve_path}, Env};
-
-use futures::TryStreamExt;
-
 use std::str::FromStr;
 use std::ops::DerefMut;
 
 use sqlx::{
     sqlite::{SqliteConnectOptions, SqlitePoolOptions, SqliteSynchronous},
-    SqlitePool,Row,
+    SqlitePool,
 };
 
 use crate::structs::favorite_world::{FavoriteWorldFromAPI};
 
-use crate::structs::app_struct::FavoriteWorldToApp;
+use crate::structs::app_struct::AppFavoriteWorldCard;
 
 use crate::structs::db_structs::{
     SelectFavoriteWorldTag,
     SelectFavoriteItemPlatform,
 };
 
+use crate::commands::utils::{debug_log, get_file_path_str};
+
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
+// アプリ起動時のDB初期化処理
 pub async fn init_db_pool() -> Result<SqlitePool> {
-    // DBファイルのパスを取得
-    let context = tauri::generate_context!();
-    let database_path = resolve_path(
-        context.config(),
-        context.package_info(),
-        &Env::default(),
-        "db.sqlite",
-        Some(BaseDirectory::AppLocalData))
-      .unwrap();
-
-    // PathbufをStringに変換
-    let database_path_str = database_path.into_os_string().into_string().unwrap();
     
+    // DBファイルのパスを取得
+    let database_path_str = get_file_path_str("db.sqlite");
     // DBファイルの存在確認
     let is_db_exists = std::fs::metadata(&database_path_str).is_ok();
 
@@ -48,16 +37,17 @@ pub async fn init_db_pool() -> Result<SqlitePool> {
     let db_pool:SqlitePool = SqlitePoolOptions::new()
         .connect_with(connection_options)
         .await
-        .unwrap();
+        .expect("Failed to create DB pool");
 
     // DBが存在しない場合はマイグレーションを実行
     if !is_db_exists {
-        init_db_migrate(&db_pool).await.unwrap();
-        println!("DB initialized");
+        init_db_migrate(&db_pool).await.expect("Failed to migrate DB");
+        debug_log("DB initialized");
 
-        // 動作確認の実行
-        // let _ = select_favorite_item_platform(&db_pool).await.unwrap();
-        // println!("DB test passed");
+        // 動作確認
+        let platform_id: u32 = 1;
+        let platform: String = select_favorite_item_platform(&db_pool, platform_id).await.expect("Failed to select FavoriteItemPlatform");
+        debug_log(format!("platform: {}", platform));
     }
 
     Ok(db_pool)
@@ -101,13 +91,13 @@ pub async fn insert_favorite_world(pool: &SqlitePool, world: FavoriteWorldFromAP
             }
         } 
     }
-    println!("platform_id: {}", platform_id);
-
+    debug_log(format!("platform_id: {}", platform_id));
+    
     // image_urlからimage_idを取得
     // 例として、image_urlが"https://api.vrchat.cloud/api/1/image/file_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/1/256"の場合、
     // image_idは"file_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/1"となる
     let image_id: String = world.image_url.split("/").skip(6).take(2).collect::<Vec<&str>>().join("/");
-    println!("image_id: {}", image_id);
+    debug_log(format!("image_id: {}", image_id));
 
     // FavoriteWorldテーブルにワールド情報を挿入する
     sqlx::query(
@@ -129,7 +119,7 @@ pub async fn insert_favorite_world(pool: &SqlitePool, world: FavoriteWorldFromAP
         .bind(image_id.clone())
         .bind(world.publication_date.clone())
         .bind(world.updated_at.clone())
-        .bind(platform_id)
+        .bind(platform_id.clone())
         .bind(world.world_name.clone())
         .bind(world.description.clone())
         .bind(world.author_name.clone())
@@ -140,7 +130,7 @@ pub async fn insert_favorite_world(pool: &SqlitePool, world: FavoriteWorldFromAP
         .bind(image_id.clone())
         .bind(world.publication_date.clone())
         .bind(world.updated_at.clone())
-        .bind(platform_id)
+        .bind(platform_id.clone())
         .execute(tx.deref_mut())
         .await
         .expect("Failed to insert FavoriteWorld");
@@ -163,8 +153,9 @@ pub async fn insert_favorite_world(pool: &SqlitePool, world: FavoriteWorldFromAP
         // FavoriteWorldTagMapテーブルにワールドとタグの関連を挿入する
         sqlx::query(
             "INSERT INTO FavoriteWorldTagMap 
-            (worldId, tagId) 
-            SELECT ?, ?
+                (worldId, tagId) 
+            SELECT 
+                ?, ?
             WHERE NOT EXISTS (
                 SELECT 1
                 FROM FavoriteWorldTagMap
@@ -186,23 +177,15 @@ pub async fn insert_favorite_world(pool: &SqlitePool, world: FavoriteWorldFromAP
 }
 
 // FavoriteWorldテーブルからワールド情報を取得する
-// todo:いずれマクロ版を使用する...
-pub async fn select_favorite_world(pool: &SqlitePool) -> Result<Vec<FavoriteWorldToApp>> {
-    
-    // 下記のquery_as関数を使用したコードでは、「the trait bound `&mut &Pool<Sqlite>: Executor<'_>` is not satisfied」というエラーが発生するため、別の方法を考える
-    // let worlds: Vec<FavoriteWorldToApp> = sqlx::query_as(
-    //         "SELECT * FROM FavoriteWorld"
-    //     )
-    //     .fetch_all(&mut pool)
-    //     .await
-    //     .expect("Failed to select FavoriteWorld");
-    // Ok(worlds)
+pub async fn select_favorite_world(pool: &SqlitePool) -> Result<Vec<AppFavoriteWorldCard>> {
 
-    // query_asマクロでは、ビルド時には先にsqlx用のSQLクエリキャッシュを作っておかないといけないので、今回は断念。
+    let mut conn = pool
+        .acquire()
+        .await
+        .expect("Failed to acquire connection");
 
-    // query関数を使用して、Rowを取得する方法でどうにかする
-    const SQL1: &str = "
-        SELECT
+    let res: Vec<AppFavoriteWorldCard> = sqlx::query_as::<_, AppFavoriteWorldCard>(
+        "SELECT
             fw.id,
             fw.name,
             fw.description,
@@ -218,27 +201,13 @@ pub async fn select_favorite_world(pool: &SqlitePool) -> Result<Vec<FavoriteWorl
         FROM
             FavoriteWorld fw
         JOIN
-            FavoriteItemPlatform fip ON fw.platform = fip.id;";
-    let mut rows = sqlx::query(SQL1).fetch(pool);
-    let mut worlds: Vec<FavoriteWorldToApp> = Vec::new();
-    while let Ok(Some(row)) = rows.try_next().await {
-        let world = FavoriteWorldToApp {
-            world_id: row.get(0),
-            world_name: row.get(1),
-            description: row.get(2),
-            author_name: row.get(3),
-            release_status: row.get(4),
-            recommended_capacity: row.get(5),
-            capacity: row.get(6),
-            preview_youtube_id: row.get(7),
-            image_url: row.get(8),
-            publication_date: row.get(9),
-            updated_at: row.get(10),
-            platform: row.get(11),
-        };
-        worlds.push(world);
-    }
+            FavoriteItemPlatform fip ON fw.platform = fip.id;
+        ")
+        .fetch_all(&mut *conn)
+        .await
+        .expect("Failed to select FavoriteWorld");
 
+    let worlds: Vec<AppFavoriteWorldCard> = res;
     Ok(worlds)
 }
 
@@ -293,3 +262,8 @@ pub async fn select_favorite_item_platform(pool: &SqlitePool, platform_id: u32) 
     let platform: String = res.platform.clone();
     Ok(platform)
 }
+
+
+
+// TODO:query_as関数はいつかマクロへの置き換えを考える
+// query_asマクロでは、ビルド時には先にsqlx用のSQLクエリキャッシュを作っておかないといけないので、今回は断念。
