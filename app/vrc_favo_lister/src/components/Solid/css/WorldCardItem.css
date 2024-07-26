@@ -1,0 +1,71 @@
+.incard {
+  bottom: 0;
+  width: 100%;
+  /* padding: 0.5rem;
+  box-sizing: border-box; */
+}
+
+.title {
+  font-size: 1rem;
+  font-weight: bold;
+  background: rgba(0, 0, 0, 0.5);
+  background-color: black;
+  color: white;
+}
+
+/* TODO:アイコンの位置を相対的に指定したい */
+.pc {  
+  /* アイコンのサイズ */
+  width: 1.75rem;
+  height: 1.75rem;
+  /* アイコンの形 */
+  border-radius: 50%;
+  /* アイコンの枠線 */
+  border: 2px solid white;
+  /* アイコンの背景色 */
+  background-color: rgba(0, 150, 250, 0.8);
+  /* アイコンの位置 */
+  /* left: 9rem;
+  bottom: 7rem; */
+  /* left: 80%; */
+  
+  /* 文字の位置 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* 文字のサイズ・色 */
+  font-size: 0.5rem;
+  color: black;
+  
+  z-index: 1;
+}
+.quest {
+  /* アイコンのサイズ */
+  width: 1.75rem;
+  height: 1.75rem;
+  /* アイコンの形 */
+  border-radius: 50%;
+  /* アイコンの枠線 */
+  border: 2px solid white;
+  /* アイコンの背景色 */
+  background-color: rgba(0, 250, 50, 0.8);
+  /* アイコンの位置 */
+  /* left: 10rem;
+  bottom: 7rem; */
+
+  /* 文字の位置 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* 文字のサイズ・色 */
+  font-size: 0.5rem;
+  color: black;
+
+  z-index: 0;
+}
+.grayout {
+  background-color: rgb(100, 100, 100, 0.6);
+  color: white;
+}
