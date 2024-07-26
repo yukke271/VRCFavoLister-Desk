@@ -20,7 +20,7 @@ export default function NavigationHeader() {
         
         {/* DBに保存されたお気に入りのリストを表示する機能 */}
         {
-          !isLogin() ?
+          isLogin() ?
           <a href="/favorite/">Favorite</a>
           :
           <TooltipsGrayOut tips="Login required" text="Favorite" />
@@ -32,7 +32,7 @@ export default function NavigationHeader() {
           - noteを編集できる機能とかほしい
         */}
         {
-          !isLogin() ?
+          isLogin() ?
           <a href="/friend/">Friend</a>
           :
           <TooltipsGrayOut tips="Login required" text="Friend" />
@@ -41,7 +41,7 @@ export default function NavigationHeader() {
 
         {/* 自身に関する情報を表示するページ */}
         {
-          !isLogin() ?
+          isLogin() ?
           <a href="/profile/">Profile</a>
           :
           <TooltipsGrayOut tips="Login required" text="Profile" />
