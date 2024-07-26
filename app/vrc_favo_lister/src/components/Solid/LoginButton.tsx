@@ -1,5 +1,6 @@
 import { createSignal } from "solid-js";
 import { invoke } from "@tauri-apps/api";
+import { setIsLogin } from "./StoreState";
 
 export default function LoginButton() {
   const [username, setUsername] = createSignal("");
@@ -8,11 +9,21 @@ export default function LoginButton() {
   const [statusCode, setStatusCode] = createSignal("");
 
   async function loginButton() {
-    setStatusCode(await invoke("login", { 
+    await invoke("login", { 
       username: username(),
       password: password(),
       otpCode: otpCode()
-    }) as string);
+    }).then((res) => { 
+      setStatusCode(res as string);
+      
+      console.log(res as string);
+      if (res as string == "0") {
+        setUsername("");
+        setPassword("");
+        setOtpCode("");
+        setIsLogin(true);
+      }
+    });
   }
 
   /*
