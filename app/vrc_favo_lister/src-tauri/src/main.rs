@@ -10,6 +10,7 @@ fn main() {
             commands::auth::login,
             commands::auth::logout,
             commands::auth::check_cookie,
+            commands::auth::get_is_login,
             commands::favorite::load_favorite_worlds,
             commands::favorite::read_favorite,
         ])
