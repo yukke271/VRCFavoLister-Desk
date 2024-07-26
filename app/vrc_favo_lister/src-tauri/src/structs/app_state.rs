@@ -21,12 +21,15 @@ impl AppState {
 pub(crate) trait ContextTrait {
   fn get_api_config(&self) -> APIConfig;
   fn set_api_config(&mut self, api_config: APIConfig);
+  fn get_is_login(&self) -> bool;
+  fn set_is_login(&mut self, is_login: bool);
 }
 
 #[derive(Debug)] 
 pub(crate) struct Context {
+  pub(crate) is_login: bool,
   pub(crate) db_pool: SqlitePool,
-  api_config: APIConfig,
+  pub(crate) api_config: APIConfig,
 }
 
 impl ContextTrait for Context {
@@ -37,6 +40,12 @@ impl ContextTrait for Context {
     let _ = api_config.save_config_file();
     let _ = mem::replace(&mut self.api_config, api_config);
   }
+  fn get_is_login(&self) -> bool {
+    self.is_login.clone()
+  }
+  fn set_is_login(&mut self, is_login: bool) {
+    self.is_login = is_login;
+  }
 }
 
 impl Context {
@@ -44,7 +53,9 @@ impl Context {
     check_app_data_dir();
     let api_config = APIConfig::new();
     let db_pool = block_on(init_db_pool()).expect("error while initializing database pool");
+    let is_login = false;
     Context {
+      is_login,
       db_pool,
       api_config,
     }
